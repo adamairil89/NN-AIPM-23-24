@@ -1,0 +1,57 @@
+clc
+close all
+clear all
+
+XTRAIN = xlsread("trainfd001.xlsx",1, 'A1:Z1389');
+YTRAIN = xlsread("testfd001.xlsx",1, 'A1:Z1389');
+
+XTEST = xlsread("trainfd001.xlsx",1, 'AA1:AA1389');
+YTEST = xlsread("testfd001.xlsx",1, 'AA1:AA1389');
+
+inputSize = 1388;
+numResponse = 1388;
+numHiddenUnits = 100;
+
+layers = [ sequenceInputLayer(inputSize)
+    
+    fullyConnectedLayer(numResponse)
+
+    regressionLayer];
+
+opts = trainingOptions('adam', ...
+    'MaxEpochs',1000,...
+    'GradientThreshold',0.01,...
+    'InitialLearnRate',0.0001);
+
+net = trainNetwork(XTRAIN,YTRAIN,layers,opts);
+
+YPred1 = predict(net,XTEST)
+
+figure,
+plot(YPred1,'r-*','LineWidth',1),hold on
+plot(YTEST,'g-*','LineWidth',1); hold all;
+xlabel('sample')
+ylabel('values')
+grid on
+legend('Predicted','original ');
+title('performance');
+
+% Calculate predictions
+YPred = predict(net, XTEST);
+
+% Calculate RMSE
+rmse = sqrt(mean((YPred - YTEST).^2));
+
+% Display RMSE
+disp(['Root Mean Squared Error (RMSE): ', num2str(rmse)]);
+
+% Calculate predictions
+YPred = predict(net, XTEST);
+
+% Calculate R-squared
+SSR = sum((YPred - YTEST).^2);
+SST = sum((YTEST - mean(YTEST)).^2);
+rSquared = 1 - SSR/SST;
+
+% Display R-squared
+disp(['R-squared (coefficient of determination): ', num2str(rSquared)]);
